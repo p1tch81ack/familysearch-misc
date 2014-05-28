@@ -1,9 +1,11 @@
+package org.familysearch.joetools.consolidate360;
+
 import jxl.Workbook;
 import jxl.format.UnderlineStyle;
 import jxl.format.VerticalAlignment;
 import jxl.write.*;
 import jxl.write.Number;
-import org.apache.commons.cli.*;
+
 import org.familysearch.joetools.simpledb.RowSpecifier;
 
 import java.io.File;
@@ -86,7 +88,7 @@ public class Consolidate {
     }
 
 
-    private void generate(String outputFileName, String individualReportDirectoryName, boolean showCommentsOnIndividualReports, boolean nonAnonymous) throws Exception {
+    void generate(String outputFileName, String individualReportDirectoryName, boolean showCommentsOnIndividualReports, boolean nonAnonymous) throws Exception {
         WritableWorkbook workbook = null;
         if(outputFileName!=null){
             workbook = Workbook.createWorkbook(new File(outputFileName)); 
@@ -385,70 +387,6 @@ public class Consolidate {
             }
         }
         return false;
-    }
-    public static void main(String[] args){
-
-        try {
-            Options options = new Options();
-
-            Option outputFileOption = new Option("o", "output_file", true, "The name of the output file to which the spreadsheet will be saved.");
-            options.addOption(outputFileOption);
-
-            Option planningDataFileOption = new Option("d", "directory_tree", true, "The tree with iteration named directories and excel files to be consolidated.");
-            options.addOption(planningDataFileOption);
-
-            Option individualReportDirectoryOption = new Option("i", "individual_report_directory", true, "The directory where individual reports should be placed.");
-            options.addOption(individualReportDirectoryOption);
-
-            Option commentsOption = new Option("c", "comments", false, "causes anonymous comments to show up on the individual reports in random order.");
-            options.addOption(commentsOption);
-
-            Option noAnonymousOption = new Option("a", "no-anonymous", false, "removes anonymity from individual reports.");
-            options.addOption(noAnonymousOption);
-
-            Option helpOption = new Option("h", "help", false, "Prints this message.");
-            options.addOption(helpOption);
-
-            Option verboseOption = new Option("v", "verbose", false, "Verbose output.");
-            options.addOption(verboseOption);
-
-            Option invertOption = new Option("I", "invert", false, "Invert spreadsheet axis (categories across the top, names going down).");
-            options.addOption(invertOption);
-
-            Option columnShiftOption = new Option("C", "column_shift", true, "The number of columns to skip before reading consolidated date.");
-            options.addOption(columnShiftOption);
-
-            Option rowShiftOption = new Option("R", "row_shift", true, "The number of rows to skip before reading consolidated date.");
-            options.addOption(rowShiftOption);
-
-            CommandLineParser parser = new PosixParser();
-
-            CommandLine cmd = parser.parse( options, args);
-
-            if(cmd.getOptions().length<1 || cmd.hasOption('h') || !cmd.hasOption('d')){
-                HelpFormatter formatter = new HelpFormatter();
-                formatter.printHelp( "scala consolidate360.jar", options );
-            } else {
-                String outputFileName = cmd.getOptionValue('o');
-                String inputDirectoryName = cmd.getOptionValue('d');
-                String individualReportDirectoryName = cmd.getOptionValue('i');
-                int columnShift = 0;
-                if(cmd.hasOption('C')){
-                    columnShift = Integer.parseInt(cmd.getOptionValue('C'));
-                }
-                int rowShift = 0;
-                if(cmd.hasOption('R')){
-                    rowShift = Integer.parseInt(cmd.getOptionValue('R'));
-                }
-
-                Consolidate consolidate = new Consolidate(inputDirectoryName, columnShift, rowShift, cmd.hasOption('I'), cmd.hasOption('v'));
-
-                consolidate.generate(outputFileName, individualReportDirectoryName, cmd.hasOption('c'), cmd.hasOption('a'));
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
     }
 
     RowSpecifier with(RowSpecifier rowSpecifier, SpecifierType specifierType, String value){

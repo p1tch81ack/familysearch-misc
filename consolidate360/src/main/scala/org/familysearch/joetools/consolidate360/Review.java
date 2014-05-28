@@ -1,3 +1,5 @@
+package org.familysearch.joetools.consolidate360;
+
 import org.familysearch.joetools.simpledb.RowIndexEntry;
 import org.familysearch.joetools.simpledb.SimpleRow;
 
@@ -27,7 +29,6 @@ public class Review implements SimpleRow {
     }
 
     public void $init$() {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public RowIndexEntry getRowIndexEntry(){

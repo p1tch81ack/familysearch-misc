@@ -1,3 +1,5 @@
+package org.familysearch.joetools.consolidate360;
+
 import jxl.*;
 
 import java.io.File;

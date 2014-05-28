@@ -1,3 +1,4 @@
+package org.familysearch.joetools.consolidate360;
 
 import org.familysearch.joetools.simpledb.Function;
 import org.familysearch.joetools.simpledb.RowSpecifier;
@@ -13,7 +14,7 @@ public class ReviewStore {
     }
 
     /*
-    public SimpleTable<Review> getTable(){
+    public SimpleTable<org.familysearch.joetools.consolidate360.Review> getTable(){
         return table;
     }
     */
