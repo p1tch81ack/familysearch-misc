@@ -2,15 +2,15 @@ package org.familysearch.joetools.consolidate360;
 
 import org.familysearch.joetools.simpledb.Function;
 import org.familysearch.joetools.simpledb.RowSpecifier;
-import org.familysearch.joetools.simpledb.SimpleTable;
+import org.familysearch.joetools.simpledb.SimpleHashMapTable;
 
 import java.util.*;
 
 public class ReviewStore {
-    private SimpleTable<Review> table;
+    private SimpleHashMapTable<Review> table;
 
     public ReviewStore() {
-        table = new SimpleTable<Review>();
+        table = new SimpleHashMapTable<Review>(Review.fieldMap);
     }
 
     /*
@@ -25,33 +25,33 @@ public class ReviewStore {
         }
     }
 
-    public Set<String> getSpecifierNamesForMatchingReviews(RowSpecifier rowSpecifier, SpecifierType specifierType){
+    public Set<Object> getSpecifierNamesForMatchingReviews(RowSpecifier rowSpecifier, SpecifierType specifierType){
         return table.getSpecifierValuesForMatchingRows(rowSpecifier, specifierType.name());
     }
 
-    private Set<String> getIterationNames(RowSpecifier rowSpecifier) {
+    private Set<Object> getIterationNames(RowSpecifier rowSpecifier) {
         return getSpecifierNamesForMatchingReviews(rowSpecifier, SpecifierType.IterationName);
     }
 
-    public Set<String> getIterationNames() {
+    public Set<Object> getIterationNames() {
         return getIterationNames(new RowSpecifier());
     }
 
-    public Collection<String> getIterationNamesForReviewee(String revieweeName) {
+    public Collection<Object> getIterationNamesForReviewee(String revieweeName) {
         return getIterationNames(new RowSpecifier(SpecifierType.RevieweeName.name(), revieweeName).without(SpecifierType.ReviewerName.name(), revieweeName));
     }
 
-    private Collection<String> getRevieweeNames(RowSpecifier rowSpecifier) {
+    private Collection<Object> getRevieweeNames(RowSpecifier rowSpecifier) {
         return getSpecifierNamesForMatchingReviews(rowSpecifier, SpecifierType.RevieweeName);
     }
 
-    public Collection<String> getRevieweeNames() {
+    public Collection<Object> getRevieweeNames() {
         return getRevieweeNames(new RowSpecifier());
     }
 
     private Map<String, ? extends List<String>> getListOfCommentsForMatchingReviews(RowSpecifier rowSpecifier) {
         return table.getMappedListOfValuesMatchingSpecifierGrupedByConcatinatedUniqueValues(rowSpecifier,
-                new Function<Review, String>(){public String get(Review o){return o.getReviewValue().toString();}},
+                new Function<Review, Object>(){public String get(Review o){return o.getReviewValue().toString();}},
                 " - "
         );
     }

@@ -100,23 +100,23 @@ public class Consolidate {
         }
 
         int nextSheet = 0;
-        for(String revieweeName: reviewStore.getRevieweeNames()){
+        for(Object revieweeName: reviewStore.getRevieweeNames()){
             if(workbook!=null){
-                WritableSheet sheet = workbook.createSheet(revieweeName, nextSheet);
-                populateSheetForRevieweeWithAverageRatingsAcrossAndIterationsDown(sheet, revieweeName, true, true);
+                WritableSheet sheet = workbook.createSheet(revieweeName.toString(), nextSheet);
+                populateSheetForRevieweeWithAverageRatingsAcrossAndIterationsDown(sheet, revieweeName.toString(), true, true);
             }
 
             if(individualReportDirectory!=null){
                 File individualReportFile = new File(individualReportDirectory, revieweeName + ".xls");
                 WritableWorkbook individualWorkBook = Workbook.createWorkbook(individualReportFile);
                 WritableSheet sheet = individualWorkBook.createSheet("Summary", 0);
-                populateSheetForRevieweeWithAverageRatingsAcrossAndIterationsDown(sheet, revieweeName,
+                populateSheetForRevieweeWithAverageRatingsAcrossAndIterationsDown(sheet, revieweeName.toString(),
                         showCommentsOnIndividualReports, nonAnonymous);
-                Collection<String> iterationNames = reviewStore.getIterationNamesForReviewee(revieweeName);
-                for(String iterationName:iterationNames){
-                    WritableSheet iterationSheet = individualWorkBook.createSheet(iterationName, 0);
-                    populateSheetForIterationAndRevieweeWithRatingsAcrossAndReviewersDown(iterationSheet, iterationName,
-                            revieweeName, showCommentsOnIndividualReports, nonAnonymous);
+                Collection<Object> iterationNames = reviewStore.getIterationNamesForReviewee(revieweeName.toString());
+                for(Object iterationName:iterationNames){
+                    WritableSheet iterationSheet = individualWorkBook.createSheet(iterationName.toString(), 0);
+                    populateSheetForIterationAndRevieweeWithRatingsAcrossAndReviewersDown(iterationSheet, iterationName.toString(),
+                            revieweeName.toString(), showCommentsOnIndividualReports, nonAnonymous);
                 }
                 individualWorkBook.write();
                 individualWorkBook.close();
@@ -125,10 +125,10 @@ public class Consolidate {
         }
 
         if(workbook!=null){
-            Set<String> iterationNames = reviewStore.getIterationNames();
-            for(String iterationName:iterationNames){
-                WritableSheet summaryIterationSheet = workbook.createSheet(iterationName, 0);
-                populateSheetForIterationWithAverageRatingsAcrossAndRevieweesDown(summaryIterationSheet, iterationName, true, true);
+            Set<Object> iterationNames = reviewStore.getIterationNames();
+            for(Object iterationName:iterationNames){
+                WritableSheet summaryIterationSheet = workbook.createSheet(iterationName.toString(), 0);
+                populateSheetForIterationWithAverageRatingsAcrossAndRevieweesDown(summaryIterationSheet, iterationName.toString(), true, true);
             }
             WritableSheet summaryIterationSheet = workbook.createSheet("Summary", 0);
             populateSheetWithAverageRatingsAcrossAndRevieweesDown(summaryIterationSheet, true, true);
@@ -241,13 +241,13 @@ public class Consolidate {
                                                                     int columnWidth) throws Exception {
         int column=startingColumn;
         int row = startingRow;
-        Set<String> columnNames = reviewStore.getSpecifierNamesForMatchingReviews(rowSpecifier, columSpecifierType);
-        Set<String> rowNames = reviewStore.getSpecifierNamesForMatchingReviews(rowSpecifier, rowSpecifierType);
+        Set<Object> columnNames = reviewStore.getSpecifierNamesForMatchingReviews(rowSpecifier, columSpecifierType);
+        Set<Object> rowNames = reviewStore.getSpecifierNamesForMatchingReviews(rowSpecifier, rowSpecifierType);
         if(showColumnNames){
             sheet.addCell(new Label(column, row, "", headerFormat));
             column++; // we advance anyway so there is room on the left for things like average at the bottom left.
-            for(String ratingTitle: columnNames){
-                sheet.addCell(new Label(column, row, ratingTitle, headerFormat));
+            for(Object ratingTitle: columnNames){
+                sheet.addCell(new Label(column, row, ratingTitle.toString(), headerFormat));
                 sheet.setColumnView(column, columnWidth);
                 column++;
             }
@@ -258,19 +258,19 @@ public class Consolidate {
         }
         row++;
 
-        for(String rowName: rowNames){
+        for(Object rowName: rowNames){
             column = startingColumn;
             if(showRowNames) {
-                sheet.addCell(new Label(column, row, rowName, headerFormat));
+                sheet.addCell(new Label(column, row, rowName.toString(), headerFormat));
             } else {
                 sheet.addCell(new Label(column, row, "", headerFormat));
             }
             column++; // we advance anyway so there is room on the left for things like average at the bottom left.
-            RowSpecifier rowRowSpecifier = with(rowSpecifier, rowSpecifierType, rowName);
+            RowSpecifier rowRowSpecifier = with(rowSpecifier, rowSpecifierType, rowName.toString());
             int columnCount = 0;
             double columnTotal = 0.0;
-            for(String columnName: columnNames){
-                RowSpecifier columnRowSpecifier = with(rowRowSpecifier, columSpecifierType, columnName);
+            for(Object columnName: columnNames){
+                RowSpecifier columnRowSpecifier = with(rowRowSpecifier, columSpecifierType, columnName.toString());
                 Object cellValue = reviewStore.getAverageRatingOrCombinedCommentsforMatchingReviews(columnRowSpecifier, consolidationSpecifierType, showReviewerNamesOnCommens);
                 if(cellValue instanceof Double){
                     columnTotal += (Double)cellValue;
@@ -294,12 +294,12 @@ public class Consolidate {
             column++; // we advance anyway so there is room on the left for things like average at the bottom left.
             int totalCount = 0;
             double totalTotal = 0;
-            for( String columnName: columnNames){
+            for( Object columnName: columnNames){
                 int rowCount = 0;
                 double rowTotal = 0.0;
-                for( String rowName: rowNames){
-                    RowSpecifier rowRowSpecifier = with(rowSpecifier, rowSpecifierType, rowName);
-                    RowSpecifier columnRowSpecifier = with(rowRowSpecifier, columSpecifierType, columnName);
+                for( Object rowName: rowNames){
+                    RowSpecifier rowRowSpecifier = with(rowSpecifier, rowSpecifierType, rowName.toString());
+                    RowSpecifier columnRowSpecifier = with(rowRowSpecifier, columSpecifierType, columnName.toString());
                     Object cellValue = reviewStore.getAverageRatingOrCombinedCommentsforMatchingReviews(columnRowSpecifier, consolidationSpecifierType, showReviewerNamesOnCommens);
                     if(cellValue instanceof Double){
                         rowTotal+=(Double)cellValue;
@@ -358,9 +358,9 @@ public class Consolidate {
     private int addTurnedInReview(WritableSheet sheet, int column, int row, WritableCellFormat format, String revieweeName) throws WriteException {
         sheet.addCell(new Label(column, row, "Turned In Reveiw", format));
         row++;
-        for(String iterationName : reviewStore.getIterationNamesForReviewee(revieweeName)){
-            sheet.addCell(new Label(0, row, iterationName, headerFormat));
-            if(turnedInReview(iterationName, revieweeName)){
+        for(Object iterationName : reviewStore.getIterationNamesForReviewee(revieweeName)){
+            sheet.addCell(new Label(0, row, iterationName.toString(), headerFormat));
+            if(turnedInReview(iterationName.toString(), revieweeName)){
                 sheet.addCell(new Label(column, row, "Yes", normalFormat));
             } else {
                 sheet.addCell(new Label(column, row, "No", normalFormat));
