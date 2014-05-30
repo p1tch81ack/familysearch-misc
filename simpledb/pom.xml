@@ -20,24 +20,43 @@
     <encoding>UTF-8</encoding>
     <scala.version>2.8.0</scala.version>
   </properties>
+    <distributionManagement>
+        <repository>
+            <id>sonatype</id>
+            <name>Sonatype</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+        <snapshotRepository>
+            <id>sonatype</id>
+            <name>Sonatype</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
-<!--
-  <repositories>
-    <repository>
-      <id>scala-tools.org</id>
-      <name>Scala-Tools Maven2 Repository</name>
-      <url>http://scala-tools.org/repo-releases</url>
-    </repository>
-  </repositories>
+    <scm>
+        <url>https://bitbucket.org/rciovati/my-repo/src</url>
+        <connection>scm:git:ssh://git@bitbucket.org/rciovati/my-repo.git</connection>
+        <developerConnection>scm:git:ssh://git@bitbucket.org/rciovati/my-repo.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
-  <pluginRepositories>
-    <pluginRepository>
-      <id>scala-tools.org</id>
-      <name>Scala-Tools Maven2 Repository</name>
-      <url>http://scala-tools.org/repo-releases</url>
-    </pluginRepository>
-  </pluginRepositories>
--->
+    <!--
+      <repositories>
+        <repository>
+          <id>scala-tools.org</id>
+          <name>Scala-Tools Maven2 Repository</name>
+          <url>http://scala-tools.org/repo-releases</url>
+        </repository>
+      </repositories>
+
+      <pluginRepositories>
+        <pluginRepository>
+          <id>scala-tools.org</id>
+          <name>Scala-Tools Maven2 Repository</name>
+          <url>http://scala-tools.org/repo-releases</url>
+        </pluginRepository>
+      </pluginRepositories>
+    -->
   <dependencies>
     <dependency>
       <groupId>org.scala-lang</groupId>
