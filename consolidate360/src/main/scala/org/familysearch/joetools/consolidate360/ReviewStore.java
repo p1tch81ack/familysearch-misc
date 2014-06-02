@@ -25,8 +25,17 @@ public class ReviewStore {
         }
     }
 
+    private Set<Object> scalaCollectionToSortedJavaSet(scala.collection.immutable.Set<Object> scalaSet){
+        TreeSet<Object> ret = new TreeSet<Object>();
+        scala.collection.Iterator<Object> scalaSetIterator = scalaSet.iterator();
+        while(scalaSetIterator.hasNext()){
+            ret.add(scalaSetIterator.next());
+        }
+        return ret;
+    }
+
     public Set<Object> getSpecifierNamesForMatchingReviews(RowSpecifier rowSpecifier, SpecifierType specifierType){
-        return table.getSpecifierValuesForMatchingRows(rowSpecifier, specifierType.name());
+        return scalaCollectionToSortedJavaSet(table.getSpecifierValuesForMatchingRows(rowSpecifier, specifierType.name()));
     }
 
     private Set<Object> getIterationNames(RowSpecifier rowSpecifier) {
@@ -50,10 +59,29 @@ public class ReviewStore {
     }
 
     private Map<String, ? extends List<String>> getListOfCommentsForMatchingReviews(RowSpecifier rowSpecifier) {
-        return table.getMappedListOfValuesMatchingSpecifierGrupedByConcatinatedUniqueValues(rowSpecifier,
-                new Function<Review, Object>(){public String get(Review o){return o.getReviewValue().toString();}},
+        Map<String, java.util.List<String>> out = new TreeMap<String, java.util.List<String>>();
+        scala.collection.immutable.Map<String, ? extends scala.collection.immutable.List<String>> scalaMap =
+                table.getMappedListOfValuesMatchingSpecifierGrupedByConcatinatedUniqueValues(
+                        rowSpecifier,
+                        new Function<Review, Object>(){
+                            public String get(Review o){
+                                return o.getReviewValue().toString();
+                            }
+                        },
                 " - "
         );
+        scala.collection.Iterator<String> scalaMapIterator = scalaMap.keySet().iterator();
+        while(scalaMapIterator.hasNext()){
+            String key = scalaMapIterator.next();
+            scala.collection.immutable.List<String> scalaMapEntry = scalaMap.apply(key);
+            java.util.List<String> mapEntry = new LinkedList<String>();
+            scala.collection.Iterator<String> scalaMapEntryIterator = scalaMapEntry.iterator();
+            while (scalaMapEntryIterator.hasNext()){
+                mapEntry.add(scalaMapEntryIterator.next());
+            }
+            out.put(key, mapEntry);
+        }
+        return out;
     }
 
     public String getAllCommentsForMatchingReviews(RowSpecifier rowSpecifier, boolean showCommentKeys) {
