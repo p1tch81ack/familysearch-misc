@@ -5,6 +5,7 @@ import jxl.*;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeSet;
 
 public class ReviewSpreadsheet {
     List<Review> reviews;
@@ -12,6 +13,8 @@ public class ReviewSpreadsheet {
     int rowShift;
     boolean flipAxis;
     boolean verbose;
+    TreeSet<String> ratingTitles;
+    TreeSet<String> commentTitles;
 
     public ReviewSpreadsheet(File spreadsheetFile, int columnShift, int rowShift, boolean flipAxis, boolean verbose, String iterationName, String reviewerName) throws Exception {
         reviews = new LinkedList<Review>();
@@ -24,9 +27,9 @@ public class ReviewSpreadsheet {
         workbookSettings.setSuppressWarnings(true);
         Workbook inputWorkbook = Workbook.getWorkbook(spreadsheetFile, workbookSettings);
         Sheet sheet = inputWorkbook.getSheet(0);
-        List<String> titles = new LinkedList<String>();
-        List<Boolean> isRatingSettings = new LinkedList<Boolean>();
         List<String> revieweeNames = new LinkedList<String>();
+        ratingTitles = new TreeSet<String>();
+        commentTitles = new TreeSet<String>();
 
         int column = 1;
         Cell nameCell = readCell(sheet, column, 0);
@@ -40,25 +43,28 @@ public class ReviewSpreadsheet {
         Cell titleCell = readCell(sheet, 0, row);
         while(titleCell!=null && !titleCell.getContents().equals("")){
             String title = titleCell.getContents();
-            titles.add(title);
             boolean isRating = false;
             String reason = null;
+            Integer reasonColumn = null;
             for(int i=0; i<revieweeNames.size(); i++){
                 Cell valueCell = readCell(sheet, i + 1, row);
                 String value= valueCell.getContents();
                 if(value.equals("NA")){
                     isRating = true;
                     reason = "NA";
+                    reasonColumn = i+1;
                     break;
                 } else if(hasDataValidation(valueCell)){
                     isRating = true;
                     reason = "data validation";
+                    reasonColumn = i+1;
                     break;
                 } else {
                     try{
                         new Integer(value);
                         reason = "integer";
                         isRating = true;
+                        reasonColumn = i+1;
                         break;
                     } catch (NumberFormatException ignored) {
                     }
@@ -66,12 +72,16 @@ public class ReviewSpreadsheet {
             }
             if(verbose){
                 if(isRating){
-                    System.out.println("Row " + row + " is a rating (" + reason + ").");
+                    System.out.println("Row " + row + " (" + title + ") is a rating (" + reason + " in column " + reasonColumn + ").");
                 } else {
-                    System.out.println("Row " + row + " is not a rating.");
+                    System.out.println("Row " + row + " (" + title + ") is not a rating.");
                 }
             }
-            isRatingSettings.add(isRating);
+            if(isRating){
+                ratingTitles.add(title);
+            } else {
+                commentTitles.add(title);
+            }
             row++;
             titleCell = readCell(sheet, 0, row);
         }
@@ -81,19 +91,25 @@ public class ReviewSpreadsheet {
             if(verbose){
                 System.out.println("Reviewee: " + revieweeName);
             }
-            for(int i=0; i<titles.size(); i++){
-                if(isRatingSettings.get(i)){
-                    int reviewValue = safelyReadIntegerCell(sheet, column, i + 1);
+            if(revieweeName.equals(reviewerName)){
+                System.out.println("Skipping " + revieweeName + " because they are the reviewer (" + reviewerName + ").");
+            } else {
+                row = 1;
+                for(String ratingTitle: ratingTitles){
+                    int reviewValue = safelyReadIntegerCell(sheet, column, row);
                     if(reviewValue>0){
-                        Review review = new Review(iterationName, reviewerName, revieweeName, titles.get(i), reviewValue);
+                        Review review = new Review(iterationName, reviewerName, revieweeName, ratingTitle, reviewValue);
                         reviews.add(review);
                     }
-                } else {
-                    String reviewValue = safelyReadStringCell(sheet, column, i + 1);
+                    row++;
+                }
+                for(String commentTitle: commentTitles) {
+                    String reviewValue = safelyReadStringCell(sheet, column, row);
                     if(reviewValue!=null && reviewValue.trim().length()>0) {
-                        Review review = new Review(iterationName, reviewerName, revieweeName, titles.get(i), reviewValue);
+                        Review review = new Review(iterationName, reviewerName, revieweeName, commentTitle, reviewValue);
                         reviews.add(review);
                     }
+                    row++;
                 }
             }
             column++;
@@ -103,6 +119,14 @@ public class ReviewSpreadsheet {
 
     public List<Review> getReviews() {
         return reviews;
+    }
+
+    public TreeSet<String> getCommentTitles() {
+        return commentTitles;
+    }
+
+    public TreeSet<String> getRatingTitles() {
+        return ratingTitles;
     }
 
     private String safelyReadStringCell(Sheet sheet, int column, int row){
@@ -125,10 +149,16 @@ public class ReviewSpreadsheet {
         if(cellFeatures!=null){
             try{
                 validationList = cellFeatures.getDataValidationList();
+
             } catch (NullPointerException ignored){
             }
             if(validationList!=null){
-                return true;
+                if(verbose){
+                    System.out.println("Data Validation (" + cell.getColumn() + ", " + cell.getRow() + "): " + validationList);
+                }
+                if(!validationList.contains("any")) {
+                    return true;
+                }
             }
         }
         return false;

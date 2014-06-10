@@ -1,35 +1,33 @@
 package org.familysearch.joetools.consolidate360;
 
-import org.familysearch.joetools.simpledb.Function;
-import org.familysearch.joetools.simpledb.RowSpecifier;
-import org.familysearch.joetools.simpledb.SimpleHashMapTable;
+import org.familysearch.joetools.simpledb.*;
 
 import java.util.*;
 
 public class ReviewStore {
-    private SimpleHashMapTable<Review> table;
+    private SimpleTable<Review> table;
 
-    public ReviewStore() {
-        table = new SimpleHashMapTable<Review>(Review.fieldMap);
+    public ReviewStore(List<Review> reviews) {
+        table = new SimpleTable<Review>(reviews, new Companion<Review>(Review.class) );
     }
 
     /*
     public SimpleTable<org.familysearch.joetools.consolidate360.Review> getTable(){
         return table;
     }
-    */
 
     public void addAllReviews(Collection<Review> reviews) {
-        for(Review review: reviews){
-            table.addRow(review);
-        }
     }
+    */
 
     private Set<Object> scalaCollectionToSortedJavaSet(scala.collection.immutable.Set<Object> scalaSet){
         TreeSet<Object> ret = new TreeSet<Object>();
         scala.collection.Iterator<Object> scalaSetIterator = scalaSet.iterator();
         while(scalaSetIterator.hasNext()){
-            ret.add(scalaSetIterator.next());
+            Object nxt = scalaSetIterator.next();
+            if(nxt!=null){
+                ret.add(nxt);
+            }
         }
         return ret;
     }
@@ -39,7 +37,7 @@ public class ReviewStore {
     }
 
     private Set<Object> getIterationNames(RowSpecifier rowSpecifier) {
-        return getSpecifierNamesForMatchingReviews(rowSpecifier, SpecifierType.IterationName);
+        return getSpecifierNamesForMatchingReviews(rowSpecifier, SpecifierType.iterationName);
     }
 
     public Set<Object> getIterationNames() {
@@ -47,29 +45,32 @@ public class ReviewStore {
     }
 
     public Collection<Object> getIterationNamesForReviewee(String revieweeName) {
-        return getIterationNames(new RowSpecifier(SpecifierType.RevieweeName.name(), revieweeName).without(SpecifierType.ReviewerName.name(), revieweeName));
+        return getIterationNames(new RowSpecifier(SpecifierType.revieweeName.name(), revieweeName).without(SpecifierType.reviewerName.name(), revieweeName));
     }
 
     private Collection<Object> getRevieweeNames(RowSpecifier rowSpecifier) {
-        return getSpecifierNamesForMatchingReviews(rowSpecifier, SpecifierType.RevieweeName);
+        return getSpecifierNamesForMatchingReviews(rowSpecifier, SpecifierType.revieweeName);
     }
 
     public Collection<Object> getRevieweeNames() {
         return getRevieweeNames(new RowSpecifier());
     }
 
-    private Map<String, ? extends List<String>> getListOfCommentsForMatchingReviews(RowSpecifier rowSpecifier) {
+    private Map<String, ? extends List<String>> getListOfCommentsForMatchingReviews(scala.collection.immutable.Map<String, Object> tagsAndValues ) {
         Map<String, java.util.List<String>> out = new TreeMap<String, java.util.List<String>>();
+        scala.collection.immutable.HashSet<String> initialTagsToSkip = new scala.collection.immutable.HashSet<String>();
+        scala.collection.Set tagsToSkip = initialTagsToSkip.$plus("entryValue");
         scala.collection.immutable.Map<String, ? extends scala.collection.immutable.List<String>> scalaMap =
-                table.getMappedListOfValuesMatchingSpecifierGrupedByConcatinatedUniqueValues(
-                        rowSpecifier,
-                        new Function<Review, Object>(){
-                            public String get(Review o){
-                                return o.getReviewValue().toString();
+                table.getMappedListOfValuesMatchingSpecifierGroupedByConcatinatedUniqueValues(
+                        tagsAndValues,
+                        tagsToSkip,
+                        new Function<Review, String>() {
+                            public String get(Review o) {
+                                return o.getEntryValue().toString();
                             }
                         },
-                " - "
-        );
+                        " - "
+                );
         scala.collection.Iterator<String> scalaMapIterator = scalaMap.keySet().iterator();
         while(scalaMapIterator.hasNext()){
             String key = scalaMapIterator.next();
@@ -84,15 +85,15 @@ public class ReviewStore {
         return out;
     }
 
-    public String getAllCommentsForMatchingReviews(RowSpecifier rowSpecifier, boolean showCommentKeys) {
-        Map<String, ? extends List<String>>  lines = getListOfCommentsForMatchingReviews(rowSpecifier);
+    public String getAllCommentsForMatchingReviews(scala.collection.immutable.Map<String, Object> tagsAndValues, boolean showCommentKeys) {
+        Map<String, ? extends List<String>>  lines = getListOfCommentsForMatchingReviews(tagsAndValues);
         return concatinateLines(!showCommentKeys, lines, showCommentKeys);
     }
 
     public double getAverageRatingForMatchingReviews(RowSpecifier rowSpecifier) {
         return table.getAverageValueForMatchingRows(rowSpecifier,
                 new Function<Review, Double>(){public Double get(Review o){
-                    Object reviewValue = o.getReviewValue();
+                    Object reviewValue = o.getEntryValue();
                     if(reviewValue instanceof Integer){
                       return (double)((Integer) reviewValue);
                     } else {
@@ -102,13 +103,15 @@ public class ReviewStore {
         );
     }
 
-    public Object getAverageRatingOrCombinedCommentsforMatchingReviews(RowSpecifier rowSpecifier, SpecifierType consolidationSpecifierType, boolean showCommentKeys) {
-        if(consolidationSpecifierType==SpecifierType.RatingName){
-            return getAverageRatingForMatchingReviews(rowSpecifier);
-        } else if(consolidationSpecifierType == SpecifierType.CommentName){
-            return getAllCommentsForMatchingReviews(rowSpecifier, showCommentKeys);
+    public Object getAverageRatingOrCombinedCommentsforMatchingReviews(scala.collection.immutable.Map<String, Object> tagsAndValues, ConsolidationType consolidationType, boolean showCommentKeys) {
+        if(consolidationType==ConsolidationType.rating){
+            return getAverageRatingForMatchingReviews(RowSpecifier.apply(tagsAndValues));
+        } else if(consolidationType == ConsolidationType.comment){
+            return getAllCommentsForMatchingReviews(tagsAndValues, showCommentKeys);
+        } else {
+            throw new IllegalArgumentException("Invalid ConsolidationType specified: " + consolidationType.name());
+
         }
-        return null;
     }
 
 //                     line += ": ";
