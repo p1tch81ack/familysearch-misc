@@ -71,12 +71,14 @@
       <version>4.8.1</version>
       <scope>test</scope>
     </dependency>
+      <!--
     <dependency>
       <groupId>org.scala-tools.testing</groupId>
       <artifactId>specs_${scala.version}</artifactId>
       <version>1.6.5</version>
       <scope>test</scope>
     </dependency>
+    -->
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest</artifactId>
@@ -87,7 +89,7 @@
 
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
-    <testSourceDirectory>src/test/scala</testSourceDirectory>
+    <testSourceDirectory>src</testSourceDirectory> <!-- src/test/scala -->
     <plugins>
       <plugin>
         <groupId>org.scala-tools</groupId>
