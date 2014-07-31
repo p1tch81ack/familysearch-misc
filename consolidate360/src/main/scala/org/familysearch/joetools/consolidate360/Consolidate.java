@@ -163,11 +163,12 @@ public class Consolidate {
 
         int row = 0;
         sheet.addCell(new Label(0, row, revieweeName, nameFormat));
+
         row++;
 
         Map<String, Object> tagsAndValues = with(new HashMap<String, Object>(), SpecifierType.revieweeName.toString(), revieweeName);
         //Set<Object> columnTitles = reviewStore.getSpecifierNamesForMatchingReviews(RowSpecifier.apply(tagsAndValues), SpecifierType.entryName);
-        Set<Object> rowNames = reviewStore.getSpecifierNamesForMatchingReviews(RowSpecifier.apply(tagsAndValues), SpecifierType.revieweeName);
+        Set<Object> rowNames = reviewStore.getSpecifierNamesForMatchingReviews(RowSpecifier.apply(tagsAndValues), SpecifierType.iterationName);
         int nextColumn = populateSheetForRowSpecColumnSpecAndReviewSpecifier(
                 sheet,
                 0,
@@ -202,7 +203,7 @@ public class Consolidate {
                     false,
                     false,
                     nonAnonymous,
-                    30
+                    60
             );
         }
     }
@@ -215,7 +216,7 @@ public class Consolidate {
                 SpecifierType.iterationName.toString(),
                 iterationName);
 //        Set<Object> columnTitles = reviewStore.getSpecifierNamesForMatchingReviews(RowSpecifier.apply(tagsAndValues), SpecifierType.entryName);
-        Set<Object> rowNames = reviewStore.getSpecifierNamesForMatchingReviews(RowSpecifier.apply(tagsAndValues), SpecifierType.revieweeName);
+        Set<Object> rowNames = reviewStore.getSpecifierNamesForMatchingReviews(RowSpecifier.apply(tagsAndValues), SpecifierType.reviewerName);
         int nextColumn = populateSheetForRowSpecColumnSpecAndReviewSpecifier(
                 sheet,
                 0,
@@ -249,7 +250,7 @@ public class Consolidate {
                     false,
                     false,
                     nonAnonymous,
-                    30
+                    60
             );
         }
     }
@@ -295,7 +296,7 @@ public class Consolidate {
                     false,
                     false,
                     nonAnonymous,
-                    30
+                    60
             );
         }
 
@@ -341,7 +342,7 @@ public class Consolidate {
                     false,
                     false,
                     nonAnonymous,
-                    30
+                    60
             );
         }
 
@@ -351,7 +352,7 @@ public class Consolidate {
     private int populateSheetForRowSpecColumnSpecAndReviewSpecifier(WritableSheet sheet,
                                                                     int startingColumn,
                                                                     int startingRow,
-                                                                    Set<?> columnTitles,
+                                                                    Set<String> columnTitles,
                                                                     SpecifierType columSpecifierType,
                                                                     Set<?> rowNames,
                                                                     SpecifierType rowSpecifierType,
@@ -371,9 +372,10 @@ public class Consolidate {
         */
         if(showColumnNames){
             sheet.addCell(new Label(column, row, "", headerFormat));
+            sheet.setColumnView(column, 20);
             column++; // we advance anyway so there is room on the left for things like average at the bottom left.
-            for(Object ratingTitle: columnTitles){
-                sheet.addCell(new Label(column, row, ratingTitle.toString(), headerFormat));
+            for(String columnTitle: columnTitles){
+                sheet.addCell(new Label(column, row, columnTitle, headerFormat));
                 sheet.setColumnView(column, columnWidth);
                 column++;
             }
@@ -395,8 +397,8 @@ public class Consolidate {
             Map<String, Object> rowTagsAndValues = with(tagsAndValues, rowSpecifierType.toString(), rowName);
             int columnCount = 0;
             double columnTotal = 0.0;
-            for(Object columnName: columnTitles){
-                Map<String, Object> columnTagsAndValues = with(rowTagsAndValues, columSpecifierType.toString(), columnName);
+            for(String columnTitle: columnTitles){
+                Map<String, Object> columnTagsAndValues = with(rowTagsAndValues, columSpecifierType.toString(), columnTitle);
                 Object cellValue = reviewStore.getAverageRatingOrCombinedCommentsforMatchingReviews(columnTagsAndValues, consolidationSpecifierType, showReviewerNamesOnComments);
                 if(cellValue instanceof Double){
                     columnTotal += (Double)cellValue;
@@ -454,9 +456,7 @@ public class Consolidate {
     }
 
     private void addCellIfNotNullOrZero(WritableSheet sheet, int column, int row, Object cellValue, WritableCellFormat format, WritableCellFormat formatIfNumber) throws Exception {
-        if(cellValue==null){
-            addCellIfNotNull(sheet, column, row, (String) cellValue, format);
-        } else {
+        if(cellValue!=null){
             if(cellValue instanceof Double){
                 addCellIfNotZero(sheet, column, row, (Double)cellValue, formatIfNumber);
             } else {

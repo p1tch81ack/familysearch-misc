@@ -18,7 +18,7 @@
     <maven.compiler.source>1.5</maven.compiler.source>
     <maven.compiler.target>1.5</maven.compiler.target>
     <encoding>UTF-8</encoding>
-    <scala.version>2.8.0</scala.version>
+    <scala.version>2.11.1</scala.version>
   </properties>
 
 <!--
@@ -87,6 +87,7 @@
       </dependency>
 
       <!-- Test -->
+      <!--
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -105,11 +106,12 @@
       <version>1.2</version>
       <scope>test</scope>
     </dependency>
+    -->
   </dependencies>
 
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
-    <testSourceDirectory>src/test/scala</testSourceDirectory>
+    <testSourceDirectory>src</testSourceDirectory> <!-- src/test/scala -->
     <plugins>
       <plugin>
         <groupId>org.scala-tools</groupId>
@@ -123,7 +125,7 @@
             </goals>
             <configuration>
               <args>
-                <arg>-make:transitive</arg>
+<!--                <arg>-make:transitive</arg> -->
                 <arg>-dependencyfile</arg>
                 <arg>${project.build.directory}/.scala_dependencies</arg>
               </args>

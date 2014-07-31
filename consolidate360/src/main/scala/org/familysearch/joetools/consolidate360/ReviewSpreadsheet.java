@@ -5,7 +5,6 @@ import jxl.*;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.TreeSet;
 
 public class ReviewSpreadsheet {
     List<Review> reviews;
@@ -13,8 +12,8 @@ public class ReviewSpreadsheet {
     int rowShift;
     boolean flipAxis;
     boolean verbose;
-    TreeSet<String> ratingTitles;
-    TreeSet<String> commentTitles;
+    List<String> ratingTitles;
+    List<String> commentTitles;
 
     public ReviewSpreadsheet(File spreadsheetFile, int columnShift, int rowShift, boolean flipAxis, boolean verbose, String iterationName, String reviewerName) throws Exception {
         reviews = new LinkedList<Review>();
@@ -28,8 +27,8 @@ public class ReviewSpreadsheet {
         Workbook inputWorkbook = Workbook.getWorkbook(spreadsheetFile, workbookSettings);
         Sheet sheet = inputWorkbook.getSheet(0);
         List<String> revieweeNames = new LinkedList<String>();
-        ratingTitles = new TreeSet<String>();
-        commentTitles = new TreeSet<String>();
+        ratingTitles = new LinkedList<String>();
+        commentTitles = new LinkedList<String>();
 
         int column = 1;
         Cell nameCell = readCell(sheet, column, 0);
@@ -121,11 +120,11 @@ public class ReviewSpreadsheet {
         return reviews;
     }
 
-    public TreeSet<String> getCommentTitles() {
+    public List<String> getCommentTitles() {
         return commentTitles;
     }
 
-    public TreeSet<String> getRatingTitles() {
+    public List<String> getRatingTitles() {
         return ratingTitles;
     }
 

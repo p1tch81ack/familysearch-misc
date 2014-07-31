@@ -8,7 +8,7 @@ public class ReviewStore {
     private SimpleTable<Review> table;
 
     public ReviewStore(List<Review> reviews) {
-        table = new SimpleTable<Review>(reviews, new Companion<Review>(Review.class) );
+        table = new SimpleTable<Review>(reviews, Review.class);
     }
 
     /*
@@ -59,7 +59,7 @@ public class ReviewStore {
     private Map<String, ? extends List<String>> getListOfCommentsForMatchingReviews(scala.collection.immutable.Map<String, Object> tagsAndValues ) {
         Map<String, java.util.List<String>> out = new TreeMap<String, java.util.List<String>>();
         scala.collection.immutable.HashSet<String> initialTagsToSkip = new scala.collection.immutable.HashSet<String>();
-        scala.collection.Set tagsToSkip = initialTagsToSkip.$plus("entryValue");
+        scala.collection.Set<String> tagsToSkip = initialTagsToSkip.$plus("entryValue");
         scala.collection.immutable.Map<String, ? extends scala.collection.immutable.List<String>> scalaMap =
                 table.getMappedListOfValuesMatchingSpecifierGroupedByConcatinatedUniqueValues(
                         tagsAndValues,

@@ -2,13 +2,10 @@ package org.familysearch.joetools.consolidate360
 
 import org.apache.commons.cli._
 import org.apache.commons.cli.Option
-import scala.Predef.String
 
-/**
- * @author ${user.name}
- */
 object App {
   def main(args: Array[String]) {
+
     try {
       val options: Options = new Options
       val outputFileOption: org.apache.commons.cli.Option = new Option("o", "output_file", true, "The name of the output file to which the spreadsheet will be saved.")
@@ -54,10 +51,9 @@ object App {
       }
     }
     catch {
-      case e: Exception => {
+      case e: Exception =>
         System.out.println(e.getMessage)
         e.printStackTrace()
-      }
     }
   }
 }
