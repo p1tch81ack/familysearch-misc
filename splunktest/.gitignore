@@ -36,3 +36,6 @@ build.log
 # switch to regexp syntax.
 #  syntax: regexp
 #  ^\.pc/
+
+results.xml
+hs_err_pid13344.log
