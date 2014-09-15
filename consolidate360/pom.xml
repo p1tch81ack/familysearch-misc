@@ -25,14 +25,12 @@
      https://oss.sonatype.org/content/groups/public
   -->
     <repositories>
-<!--
         <repository>
             <layout>legacy</layout>
             <id>joestools</id>
             <name>joestools</name>
             <url>file:///c:\localrepository</url>
         </repository>
--->
         <repository>
             <id>sonatype</id>
             <name>Sonatype</name>
