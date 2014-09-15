@@ -27,12 +27,14 @@ object App {
 
 //    val endpoint: String = "/reportabuse/ "
 //    val endpoint: String = "/watch/ "
-    val endpoint = "/links/healthcheck/vitals "
+//    val endpoint = "/links/healthcheck/vitals "
+    val endpoint = "/authorities/ "
     val rawSearch = generateProductionLoadBalancerQuery(endpoint)
     //    val targetDate = DateUtils.parseDateStrictly("2014-08-26 15:10", "yyyy-MM-dd HH:mm")
 //    val targetDate = DateUtils.parseDateStrictly("2014-08-26 15:14", "yyyy-MM-dd HH:mm")
 //    val targetDate = DateUtils.parseDateStrictly("2014-08-09 16:41", "yyyy-MM-dd HH:mm")
-    val targetDate = DateUtils.parseDateStrictly("2014-08-22 19:11", "yyyy-MM-dd HH:mm")
+//    val targetDate = DateUtils.parseDateStrictly("2014-08-22 19:11", "yyyy-MM-dd HH:mm")
+    val targetDate = DateUtils.parseDateStrictly("2014-09-10 20:21", "yyyy-MM-dd HH:mm")
     /*
     for (user <- connection.getUsers) {
       println("User: " + user.getName)
