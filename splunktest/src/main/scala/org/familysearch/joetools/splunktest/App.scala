@@ -23,7 +23,9 @@ object App {
     println("Formatted: " + formatted)
     */
     val savedSearchName: String = "ReportAbuse-Pingdom-Healthcheck"
-    val connection = SplunkConnection("ut01-splunksch04.i.fsglobal.net", "shullja", "***REMOVED***")
+    val userName: String = args(0)
+    val password: String = args(1)
+    val connection = SplunkConnection("ut01-splunksch04.i.fsglobal.net", userName, password)
 
 //    val endpoint: String = "/reportabuse/ "
 //    val endpoint: String = "/watch/ "
@@ -62,7 +64,9 @@ object App {
 //    val results = loadFile("results.xml")
     val resultsMap = groupByTimeStampWithMinuteResolution(results)
 
-    println("Fields: " + results.meta.fieldOrder)
+    for(meta<-results.metas) {
+      println("Fields: " + meta.fieldOrder)
+    }
     for(time<-resultsMap.keys){
       val resultList = resultsMap(time)
       for(resultId<-resultList) {
@@ -106,14 +110,16 @@ object App {
   def findMissingMinutes(results: Results): SortedSet[Date] = {
     val mappedResults = groupByTimeStampWithMinuteResolution(results)
     val missingMinutes = new scala.collection.mutable.TreeSet[Date]
-    val minDate = mappedResults.firstKey
-    val maxDate = mappedResults.lastKey
-    val differenceMillis = maxDate.getTime - minDate.getTime
-    val minuteCount = ((differenceMillis/60000) + 1).asInstanceOf[Int]
-    for(i <- 0 until minuteCount){
-      val candidateMinute = DateUtils.addMinutes(minDate, i)
-      if(!mappedResults.contains(candidateMinute)){
-        missingMinutes.add(candidateMinute)
+    if(mappedResults.size>0) {
+      val minDate = mappedResults.firstKey
+      val maxDate = mappedResults.lastKey
+      val differenceMillis = maxDate.getTime - minDate.getTime
+      val minuteCount = ((differenceMillis / 60000) + 1).asInstanceOf[Int]
+      for (i <- 0 until minuteCount) {
+        val candidateMinute = DateUtils.addMinutes(minDate, i)
+        if (!mappedResults.contains(candidateMinute)) {
+          missingMinutes.add(candidateMinute)
+        }
       }
     }
     missingMinutes
