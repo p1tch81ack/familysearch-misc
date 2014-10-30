@@ -3,9 +3,9 @@ package org.familysearch.joetools.splunktest.xml
 import scala.xml.{Node, NodeSeq}
 
 class Results(node: Node) {
-  val meta = {
+  val metas = {
     val metaNodes: NodeSeq = node \ "meta"
-    new Meta(metaNodes.head)
+    (for(metaNode<-metaNodes) yield new Meta(metaNode)).toList
   }
   val results = {
     val resultNodes: NodeSeq = node \ "result"
