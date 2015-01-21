@@ -54,8 +54,8 @@
     </dependency>
       <dependency>
           <groupId>org.familysearch.joetools.simpledb</groupId>
-          <artifactId>simpledb</artifactId>
-          <version>1.0-SNAPSHOT</version>
+          <artifactId>familysearch-simpledb</artifactId>
+          <version>1.8</version>
       </dependency>
 
       <!-- Test -->

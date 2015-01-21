@@ -5,7 +5,7 @@ import java.util.Date
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.ss.usermodel._
 import org.familysearch.joetools.simpledb.{RowSpecifier, SimpleTable}
-import scala.collection.JavaConversions._
+//import scala.collection.JavaConversions._
 
 /*
 _drawing = (HSSFPatriarch) _sheet.createDrawingPatriarch();
@@ -31,15 +31,15 @@ object PrintTeamData {
     fixedTwoStyle.setDataFormat(dataFormat.getFormat("0.00"))
 
     for (projectName <- projectNames){
-        val simpleTable: SimpleTable[TaskRow] = TaskRow.getTaskRowsForProject(connection, projectName, beginDate, endDate)
-        if (!generateSheet(connection, wb, creationHelper, fixedTwoStyle, projectName, simpleTable, beginDate, endDate)){
+        val taskRowsForProject = TaskRow.getTaskRowsForProject(connection, projectName, beginDate, endDate)
+        if (!generateSheet(connection, wb, creationHelper, fixedTwoStyle, projectName, taskRowsForProject, beginDate, endDate)){
           println("Project " + projectName + " was not found.")
         }
     }
 
     for (teamName <- teamNames){
-      val simpleTable: SimpleTable[TaskRow] = TaskRow.getTaskRowsForTeam(connection, teamName, beginDate, endDate)
-      if (!generateSheet(connection, wb, creationHelper, fixedTwoStyle, teamName, simpleTable, beginDate, endDate)){
+      val taskRowsForTeam = TaskRow.getTaskRowsForTeam(connection, teamName, beginDate, endDate)
+      if (!generateSheet(connection, wb, creationHelper, fixedTwoStyle, teamName, taskRowsForTeam, beginDate, endDate)){
         println("Team " + teamName + " was not found.")
       }
     }
@@ -50,20 +50,21 @@ object PrintTeamData {
   }
 
 
-  def generateSheet(connection: V1Connection, wb: Workbook, creationHelper: CreationHelper, fixedTwoStyle: CellStyle, tabTitle: String, simpleTable: SimpleTable[TaskRow], beginDate: Date, endDate: Date): Boolean = {
-    if (!(simpleTable eq null)) {
+  def generateSheet(connection: V1Connection, wb: Workbook, creationHelper: CreationHelper, fixedTwoStyle: CellStyle, tabTitle: String, taskRows: Iterable[TaskRow], beginDate: Date, endDate: Date): Boolean = {
+    if (!(taskRows eq null)) {
+      val simpleTable = new SimpleTable[TaskRow](taskRows)
       val sheet = wb.createSheet(tabTitle)
       val drawingPatriarch: Drawing = sheet.createDrawingPatriarch()
       val row0 = sheet.createRow(0)
       val cell00 = row0.createCell(0)
       cell00.setCellValue("Iteration")
       sheet.setColumnWidth(0, 30 * 250)
-      val ownerNames = simpleTable.getSpecifierValuesForMatchingRows(null, TaskRow.OWNER_NAME)
+      val ownerNames = simpleTable.getSpecifierValues(TaskRow.OWNER_NAME)
       var colPos = 1
       for (ownerName <- ownerNames) {
         val cellP0 = row0.createCell(colPos)
-        cellP0.setCellValue(ownerName)
-        sheet.setColumnWidth(colPos, ownerName.size * 250)
+        cellP0.setCellValue(ownerName.toString)
+        sheet.setColumnWidth(colPos, ownerName.toString.size * 250)
         colPos = colPos + 1
       }
       val colCount = colPos
@@ -73,15 +74,15 @@ object PrintTeamData {
       val colA0 = row0.createCell(colPos)
       colA0.setCellValue("Average")
       colPos = colPos + 1
-      val iterationNames = simpleTable.getSpecifierValuesForMatchingRows(null, TaskRow.ITERATION_NAME)
+      val iterationNames = simpleTable.getSpecifierValues(TaskRow.ITERATION_NAME)
       var maxWidth = "Iteration".size
       var rowPos = 1
       for (iterationName <- iterationNames) {
         val rowP = sheet.createRow(rowPos)
         val cell0P = rowP.createCell(0)
-        cell0P.setCellValue(iterationName)
-        if (iterationName.size > maxWidth) {
-          maxWidth = iterationName.size
+        cell0P.setCellValue(iterationName.toString)
+        if (iterationName.toString.size > maxWidth) {
+          maxWidth = iterationName.toString.size
         }
         var colPos = 1
         for (ownerName <- ownerNames) {
@@ -93,15 +94,15 @@ object PrintTeamData {
             if (commentText.size > 0) {
               commentText += "\n"
             }
-            commentText = commentText + "ID: " + row.secondaryWorkItemID + "  Estimate: " + row.secondaryWorkItemDetailEstimate
-            if (row.secondaryWorkItemIsClosed) {
+            commentText = commentText + "ID: " + row.taskID + "  Estimate: " + row.detailEstimate
+            if (row.isClosed) {
               commentText = commentText + "  Closed"
 //              val secondaryWorkItem: SecondaryWorkitem = row.secondaryWorkItem
-                commentText = commentText + "  Status: " + row.secondaryWorkItemStatus
-                println( "Status: " + row.secondaryWorkItemStatus)
-                if( !(row.secondaryWorkItemStatus eq null) && row.secondaryWorkItemStatus == "Completed"){
+                commentText = commentText + "  Status: " + row.status
+                println( "Status: " + row.status)
+                if( !(row.status eq null) && row.status == "Completed"){
                   println("adding estimate")
-                  val detailEstimate: java.lang.Double = row.secondaryWorkItemDetailEstimate
+                  val detailEstimate: java.lang.Double = row.detailEstimate
                   if (!(detailEstimate eq null)) {
                     total = total.doubleValue() + detailEstimate.doubleValue()
                   }
@@ -109,7 +110,7 @@ object PrintTeamData {
             } else {
               commentText = commentText + "  Open"
             }
-            commentText = commentText + "  Name: " + row.secondaryWorkItemName
+            commentText = commentText + "  Name: " + row.taskName
           }
           val cellCR = rowP.createCell(colPos)
           if(total.doubleValue() >0.0 || commentText.size>0){
